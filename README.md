@@ -73,13 +73,18 @@ def hello_world():
 
 You can begin developing your FastAPI application from the specified file. Whenever you save a line of code, you will see the changes automatically reflected in `localhost:8080`. Happy coding!
 
-## Other Features ✨
+---
 
-### Add more python library 📚
+## FAQ and other Features ✨
+
+### How to add more python library? 📚
 Add your python library to the `requirements.txt` file. Rest assured, no local installation is needed. 🐍
 
-### Setting up environment variables ⚙️
-Of course, you need environment variables. We follow the best practices. Considering the CI/CD pipeline scenario, we store the environment variables in the `fastapi/env.yaml` file. 🌐
+### How to set up environment variables? ⚙️
+Of course, you need environment variables. We follow the best practices. Considering the CI/CD pipeline scenario, we store the environment variables for both development and production environments in the following files. Please edit both files. 🌐
+
+- `fastapi/dev.env.yaml` for development environments
+- `fastapi/prod.env.yaml` for production environments
 
 ```yaml
 secrets:
@@ -92,11 +97,11 @@ Here you can add your environment variables. Later, you will find these environm
 In a more serious production environment, where you don't want to store environment variables in the codebase, you can set more secret environment variables on the fly from your CI/CD pipeline. 💻
 
 ```bash
-helm upgrade --set-json='secret={"envkey1":"envvalue1","envkey2":"envvalue2"}' -f ./fastapi/env.yaml fastapi ./fastapi/helm-chart
+helm upgrade --install --set-json='secret={"envkey1":"envvalue1","envkey2":"envvalue2"}' -f ./fastapi/prod.env.yaml fastapi ./fastapi/helm-chart
 ``` 
 
-### Enabling Auto Scaling in Kubernetes cluster ⚖️
-It's easy. You just have to update the `fastapi/env.yaml` file. 🚀
+### How to enable auto scaling in production Kubernetes cluster? ⚖️
+It's easy. You just have to update the `fastapi/production.env.yaml` file. 🚀
 
 ```yaml
 resources:
@@ -115,19 +120,21 @@ autoscaling:
   # targetMemoryUtilizationPercentage: 80
 ```
 
-### Add custom Kubernetes YAML 📄
+### How will I add custom Kubernetes YAML? 📄
 
 First, create a Kubernetes YAML file in the `k8-yaml-files` directory. Then update the `skaffold.yaml` file like this. 🔧
 
 ```yaml
 manifests:
   rawYaml:
-    - ./k8-yaml-files/dockerconfigjson.yaml
+    - ./k8-yaml-files/namespace.yaml # For creating namespaces
+    - ./k8-yaml-files/dockerconfigjson.yaml # For creating image pull secrets 
+    - ./k8-yaml-files/ingress-nginx.yaml # For creating ingress-nginx
 ```
 
-### Add an image pull secret 🤐
+### How to add an image pull secret in production? 🤐
 
-Update the `env.yaml` file with the following entry. 🔒
+Update the `prod.env.yaml` file with the following entry. 🔒
 
 ```yaml
 imagePullSecrets: [{ name: dockerconfigjson-github-com }]
@@ -135,12 +142,22 @@ imagePullSecrets: [{ name: dockerconfigjson-github-com }]
 
 Refer to the above section to add the `dockerconfigjson` YAML. 
 
-### Change ports ⚓️
+### How to add custom image name and tag in CI/CD pipeline 
+
+With Helm, it's easy. Just set the variables. 
+
+```shell
+helm upgrade --install --set image.repository=fastapi --set image.tag=latest -f ./fastapi/prod.env.yaml fastapi ./fastapi/helm-chart
+```
+
+### How to change ports ⚓️
 
 The default port is `8080`. If you want to change it to `9090`, you need to perform three tasks. 🔄
 
 1. Change the `Dockerfile` to `EXPOSE 9090/tcp`.
-2. Add the following to your `env.yaml` file. 
+2. Add the following to your
+
+`prod.env.yaml` and `dev.env.yaml` files:
 
 ```yaml
 service:
@@ -159,23 +176,22 @@ portForward:
     localPort: 9090
 ``` 
 
-### Increase Replica 📦
-By default, the `replicaCount` is 1. To increase it, add the following line to your `env.yaml` file. 
+### How to increase replica in production? 📦
+By default, the `replicaCount` is 1. To increase it, add the following line to your `prod.env.yaml` and `dev.env.yaml` files. 
 
 ```yaml
 replicaCount: 3
 ```
 
-### More customization ✨
+### What to do if I need more customization? ✨
 
-Go to `fastapi/helm-chart/values.yaml` and tweak it according to your needs. 🛠️
+Go to `fastapi/helm-chart/values.yaml` and tweak it according to your needs. 🛠️ 
+
+Contributions are welcome as well. We are also open to discussion.
 
 ## Contributing
 
-Pull requests are welcome. For major changes, please open an issue first
-to discuss what you would like to change.
-
-Please make sure to update tests as appropriate.
+Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 
 ## License
 

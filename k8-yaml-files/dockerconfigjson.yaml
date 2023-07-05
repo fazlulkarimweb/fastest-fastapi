@@ -1,3 +1,4 @@
+# A dummy file for example
 # Please follow the guide here to use github container registru: https://dev.to/asizikov/using-github-container-registry-with-kubernetes-38fb
 kind: Secret
 type: kubernetes.io/dockerconfigjson
