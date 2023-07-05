@@ -189,41 +189,39 @@ Go to `fastapi/helm-chart/values.yaml` and tweak it according to your needs. �
 
 Contributions are welcome as well. We are also open to discussion.
 
---
-
 ## Possible Production CI/CD Pipeline
 
 The following steps outline what your CI/CD pipeline will look like in the production environment:
 
-1. **Build Docker Image**: Use the `docker build` command to build the Docker image for your FastAPI application. Provide the path to the Dockerfile (`fastapi/Dockerfile`) and tag the image with the specified `$IMAGE_NAME:$IMAGE_TAG` from the CI/CD environment variable.
+1. 🔨 **Build Docker Image**: Use the `docker build` command to build the Docker image for your FastAPI application. Provide the path to the Dockerfile (`fastapi/Dockerfile`) and tag the image with the specified `$IMAGE_NAME:$IMAGE_TAG` from the CI/CD environment variable.
 
-```shell
-docker build fastapi/ --file fastapi/Dockerfile --tag $IMAGE_NAME:$IMAGE_TAG 
-```
+   ```shell
+   docker build fastapi/ --file fastapi/Dockerfile --tag $IMAGE_NAME:$IMAGE_TAG
+   ```
 
-2. **Login to Container Registry**: Authenticate with your container registry using the `docker login` command. This step ensures you have the necessary credentials to push the Docker image to the registry.
+2. 🔑 **Login to Container Registry**: Authenticate with your container registry using the `docker login` command. This step ensures you have the necessary credentials to push the Docker image to the registry.
 
-3. **Push Image to Container Registry**: Use the `docker push` command to upload the built Docker image (`$IMAGE_NAME:$IMAGE_TAG`) to the container registry. This step makes the image accessible for deployment in your production environment.
+3. 🚀 **Push Image to Container Registry**: Use the `docker push` command to upload the built Docker image (`$IMAGE_NAME:$IMAGE_TAG`) to the container registry. This step makes the image accessible for deployment in your production environment.
 
-```shell
-docker push $IMAGE_NAME:$IMAGE_TAG
-```
+   ```shell
+   docker push $IMAGE_NAME:$IMAGE_TAG
+   ```
 
-4. **Set Kubernetes Context**: Configure the Kubernetes context to match your production environment. This ensures that subsequent commands interact with the correct Kubernetes cluster.
+4. ⚙️ **Set Kubernetes Context**: Configure the Kubernetes context to match your production environment. This ensures that subsequent commands interact with the correct Kubernetes cluster.
 
-5. **Apply Raw Kubernetes YAML**: Apply any necessary raw Kubernetes YAML files as part of your deployment. Store those in `raw-k8-yaml` folder. This step typically involves creating namespaces, configuring image pull secrets, or setting up other required Kubernetes resources.
+5. 📄 **Apply Raw Kubernetes YAML**: Apply any necessary raw Kubernetes YAML files as part of your deployment. Store those in the `raw-k8-yaml` folder. This step typically involves creating namespaces, configuring image pull secrets, or setting up other required Kubernetes resources.
 
-```shell
-kubectl apply -f /raw-k8-yaml
-```
+   ```shell
+   kubectl apply -f /raw-k8-yaml
+   ```
 
-6. **Install Helm**: Ensure that Helm is installed in your CI/CD environment. Helm enables you to deploy and manage your FastAPI application using Helm charts.
+6. 🎩 **Install Helm**: Ensure that Helm is installed in your CI/CD environment. Helm enables you to deploy and manage your FastAPI application using Helm charts.
 
-7. **Run Helm Command**: Execute the `helm upgrade --install` command to deploy your FastAPI application using Helm. This command basically upgrades if there is a installation or just installs. Specify the image repository and tag using the `--set` flag (`--set image.repository=$IMAGE_NAME --set image.tag=$IMAGE_TAG`). Additionally, provide the path to the `production.env.yaml` file (`-f ./fastapi/production.env.yaml`) to override any Helm values specific to the production environment. Lastly add the local chart path (`./fastapi/helm-chart`) for deploying the Helm chart. Never forget to add the image pull secrets in `production.env.yaml` file.
+7. 🚢 **Run Helm Command**: Execute the `helm upgrade --install` command to deploy your FastAPI application using Helm. This command essentially upgrades the installation if it exists or performs a fresh installation. Specify the image repository and tag using the `--set` flag (`--set image.repository=$IMAGE_NAME --set image.tag=$IMAGE_TAG`). Additionally, provide the path to the `production.env.yaml` file (`-f ./fastapi/production.env.yaml`) to override any Helm values specific to the production environment. Lastly, add the local chart path (`./fastapi/helm-chart`) for deploying the Helm chart. Don't forget to include the image pull secrets in the `production.env.yaml` file.
 
-```shell
-helm upgrade --install --set image.repository=$IMAGE_NAME --set image.tag=$IMAGE_TAG -f ./fastapi/production.env.yaml fastapi ./fastapi/helm-chart
-```
+   ```shell
+   helm upgrade --install --set image.repository=$IMAGE_NAME --set image.tag=$IMAGE_TAG -f ./fastapi/production.env.yaml fastapi ./fastapi/helm-chart
+   ```
 
 Please note that you may need to adapt these steps based on your specific CI/CD setup, container registry configuration, Kubernetes cluster, and deployment requirements in the production environment.
 
