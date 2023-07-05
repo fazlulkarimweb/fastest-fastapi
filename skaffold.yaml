@@ -10,16 +10,16 @@ build:
     push: false
 manifests:
   # rawYaml:
-  #   - ./k8-yaml-files/namespace.yaml
-  #   - ./k8-yaml-files/dockerconfigjson.yaml
-  #   - ./k8-yaml-files/ingress-nginx.yaml
+  #   - ./raw-k8-yaml/namespace.yaml
+  #   - ./raw-k8-yaml/dockerconfigjson.yaml
+  #   - ./raw-k8-yaml/ingress-nginx.yaml
   helm:
     releases:
       - name: fastapi
         skipTests: true	# Because kind clusters is not okayish with tests
         chartPath: ./fastapi/helm-chart
         valuesFiles:
-          - ./fastapi/dev.env.yaml
+          - ./fastapi/development.env.yaml
         setValueTemplates:
           image.repository: "{{ .IMAGE_REPO_fastapi }}"
           image.tag: "{{ .IMAGE_TAG_fastapi }}"

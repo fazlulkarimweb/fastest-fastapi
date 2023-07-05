@@ -83,8 +83,8 @@ Add your python library to the `requirements.txt` file. Rest assured, no local i
 ### How to set up environment variables? ⚙️
 Of course, you need environment variables. We follow the best practices. Considering the CI/CD pipeline scenario, we store the environment variables for both development and production environments in the following files. Please edit both files. 🌐
 
-- `fastapi/dev.env.yaml` for development environments
-- `fastapi/prod.env.yaml` for production environments
+- `fastapi/development.env.yaml` for development environments (For local development.)
+- `fastapi/production.env.yaml` for production environments (For production kubernetes cluster.)
 
 ```yaml
 secrets:
@@ -97,7 +97,7 @@ Here you can add your environment variables. Later, you will find these environm
 In a more serious production environment, where you don't want to store environment variables in the codebase, you can set more secret environment variables on the fly from your CI/CD pipeline. 💻
 
 ```bash
-helm upgrade --install --set-json='secret={"envkey1":"envvalue1","envkey2":"envvalue2"}' -f ./fastapi/prod.env.yaml fastapi ./fastapi/helm-chart
+helm upgrade --install --set-json='secret={"envkey1":"envvalue1","envkey2":"envvalue2"}' -f ./fastapi/production.env.yaml fastapi ./fastapi/helm-chart
 ``` 
 
 ### How to enable auto scaling in production Kubernetes cluster? ⚖️
@@ -122,19 +122,19 @@ autoscaling:
 
 ### How will I add custom Kubernetes YAML? 📄
 
-First, create a Kubernetes YAML file in the `k8-yaml-files` directory. Then update the `skaffold.yaml` file like this. 🔧
+First, create a Kubernetes YAML file in the `raw-k8-yaml` directory. Then update the `skaffold.yaml` file like this. 🔧
 
 ```yaml
 manifests:
   rawYaml:
-    - ./k8-yaml-files/namespace.yaml # For creating namespaces
-    - ./k8-yaml-files/dockerconfigjson.yaml # For creating image pull secrets 
-    - ./k8-yaml-files/ingress-nginx.yaml # For creating ingress-nginx
+    - ./raw-k8-yaml/namespace.yaml # For creating namespaces
+    - ./raw-k8-yaml/dockerconfigjson.yaml # For creating image pull secrets 
+    - ./raw-k8-yaml/ingress-nginx.yaml # For creating ingress-nginx
 ```
 
 ### How to add an image pull secret in production? 🤐
 
-Update the `prod.env.yaml` file with the following entry. 🔒
+Update the `production.env.yaml` file with the following entry. 🔒
 
 ```yaml
 imagePullSecrets: [{ name: dockerconfigjson-github-com }]
@@ -142,22 +142,22 @@ imagePullSecrets: [{ name: dockerconfigjson-github-com }]
 
 Refer to the above section to add the `dockerconfigjson` YAML. 
 
-### How to add custom image name and tag in CI/CD pipeline 
+### How to add custom image name and tag in CI/CD pipeline? 
 
 With Helm, it's easy. Just set the variables. 
 
 ```shell
-helm upgrade --install --set image.repository=fastapi --set image.tag=latest -f ./fastapi/prod.env.yaml fastapi ./fastapi/helm-chart
+helm upgrade --install --set image.repository=fastapi --set image.tag=latest -f ./fastapi/production.env.yaml fastapi ./fastapi/helm-chart
 ```
 
-### How to change ports ⚓️
+### How to change default ports? ⚓️
 
 The default port is `8080`. If you want to change it to `9090`, you need to perform three tasks. 🔄
 
 1. Change the `Dockerfile` to `EXPOSE 9090/tcp`.
 2. Add the following to your
 
-`prod.env.yaml` and `dev.env.yaml` files:
+`production.env.yaml` and `development.env.yaml` files:
 
 ```yaml
 service:
@@ -177,7 +177,7 @@ portForward:
 ``` 
 
 ### How to increase replica in production? 📦
-By default, the `replicaCount` is 1. To increase it, add the following line to your `prod.env.yaml` and `dev.env.yaml` files. 
+By default, the `replicaCount` is 1. To increase it, add the following line to your `production.env.yaml` file. 
 
 ```yaml
 replicaCount: 3
@@ -189,6 +189,44 @@ Go to `fastapi/helm-chart/values.yaml` and tweak it according to your needs. �
 
 Contributions are welcome as well. We are also open to discussion.
 
+--
+
+## Possible Production CI/CD Pipeline
+
+The following steps outline what your CI/CD pipeline will look like in the production environment:
+
+1. **Build Docker Image**: Use the `docker build` command to build the Docker image for your FastAPI application. Provide the path to the Dockerfile (`fastapi/Dockerfile`) and tag the image with the specified `$IMAGE_NAME:$IMAGE_TAG` from the CI/CD environment variable.
+
+```shell
+docker build fastapi/ --file fastapi/Dockerfile --tag $IMAGE_NAME:$IMAGE_TAG 
+```
+
+2. **Login to Container Registry**: Authenticate with your container registry using the `docker login` command. This step ensures you have the necessary credentials to push the Docker image to the registry.
+
+3. **Push Image to Container Registry**: Use the `docker push` command to upload the built Docker image (`$IMAGE_NAME:$IMAGE_TAG`) to the container registry. This step makes the image accessible for deployment in your production environment.
+
+```shell
+docker push $IMAGE_NAME:$IMAGE_TAG
+```
+
+4. **Set Kubernetes Context**: Configure the Kubernetes context to match your production environment. This ensures that subsequent commands interact with the correct Kubernetes cluster.
+
+5. **Apply Raw Kubernetes YAML**: Apply any necessary raw Kubernetes YAML files as part of your deployment. Store those in `raw-k8-yaml` folder. This step typically involves creating namespaces, configuring image pull secrets, or setting up other required Kubernetes resources.
+
+```shell
+kubectl apply -f /raw-k8-yaml
+```
+
+6. **Install Helm**: Ensure that Helm is installed in your CI/CD environment. Helm enables you to deploy and manage your FastAPI application using Helm charts.
+
+7. **Run Helm Command**: Execute the `helm upgrade --install` command to deploy your FastAPI application using Helm. This command basically upgrades if there is a installation or just installs. Specify the image repository and tag using the `--set` flag (`--set image.repository=$IMAGE_NAME --set image.tag=$IMAGE_TAG`). Additionally, provide the path to the `production.env.yaml` file (`-f ./fastapi/production.env.yaml`) to override any Helm values specific to the production environment. Lastly add the local chart path (`./fastapi/helm-chart`) for deploying the Helm chart. Never forget to add the image pull secrets in `production.env.yaml` file.
+
+```shell
+helm upgrade --install --set image.repository=$IMAGE_NAME --set image.tag=$IMAGE_TAG -f ./fastapi/production.env.yaml fastapi ./fastapi/helm-chart
+```
+
+Please note that you may need to adapt these steps based on your specific CI/CD setup, container registry configuration, Kubernetes cluster, and deployment requirements in the production environment.
+
 ## Contributing
 
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
@@ -198,7 +236,7 @@ Pull requests are welcome. For major changes, please open an issue first to disc
 [MIT](https://choosealicense.com/licenses/mit/)
 
 
-<!-- Here is the content converted to Markdown:
+<!-- Here is the content that is needed to create custom helm charts
 
 ---
 
@@ -206,9 +244,10 @@ Pull requests are welcome. For major changes, please open an issue first to disc
 Install Helm on your system. 
 
 ## Helm use case
-Use Helm to manage your FastAPI application.
+Use Helm to create and manage charts.
 
 ```shell
+cd fastapi 
 helm create fastapi
 ```
 
