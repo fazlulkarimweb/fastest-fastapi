@@ -1,6 +1,6 @@
 ## Why You Need Faster FastAPI
 
-Let's imagine you're starting a FastAPI project and someone hands you a boilerplate code to kickstart your development. You may wonder why you should consider using it instead of starting from scratch. Well, here are five benefits that make it worth your consideration:
+Let's imagine you're starting a FastAPI project and someone hands you a boilerplate code to kickstart your development. You may wonder why you should consider using it instead of starting from scratch. Well, here are six benefits that make it worth your consideration:
 
 1. ⚡ **Unmatched Speed**: This FastAPI implementation is blazingly fast, thanks to its use of the latest PyPy interpreter instead of traditional Python. The code is optimized for maximum performance, and you can hardly make it any faster. With just a few hours of tweaking, you can achieve the same lightning-fast results.
 
