@@ -1,0 +1,4 @@
+.vscode
+.cpython-38.pyc
+fastapi/__pycache__/
+fastapi/**/__pycache__/

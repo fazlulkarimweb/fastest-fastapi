@@ -1,0 +1,12 @@
+# Please follow the guide here: https://dev.to/asizikov/using-github-container-registry-with-kubernetes-38fb
+kind: Secret
+type: kubernetes.io/dockerconfigjson
+apiVersion: v1
+metadata:
+  name: dockerconfigjson-github-com
+  # namespace: default
+  labels:
+    app: docker_config
+data:
+  .dockerconfigjson: 
+    yourencodedkey==

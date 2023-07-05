@@ -1,0 +1,31 @@
+apiVersion: skaffold/v4beta6
+kind: Config
+metadata:
+  name: skaffold-fastapi
+build:
+  artifacts:
+    - image: fastapi
+      context: fastapi
+  local:
+    push: false
+manifests:
+  # rawYaml:
+  #   - ./raw-yaml/dockerconfigjson.yaml
+  helm:
+    releases:
+      - name: fastapi
+        skipTests: true	
+        chartPath: ./fastapi/helm-chart
+        valuesFiles:
+          - ./fastapi/helm-chart/values.yaml
+        setValueTemplates:
+          # https://skaffold.dev/docs/deployers/helm/
+          # use skaffold-generated image repo and tag for our deployment
+          image.repository: "{{ .IMAGE_REPO_fastapi }}"
+          image.tag: "{{ .IMAGE_TAG_fastapi }}"
+portForward:
+  - resourceType: deployment
+    resourceName: fastapi
+    port: 8080
+    address: 0.0.0.0
+    localPort: 8080
