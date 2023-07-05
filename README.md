@@ -73,6 +73,103 @@ def hello_world():
 
 You can begin developing your FastAPI application from the specified file. Whenever you save a line of code, you will see the changes automatically reflected in `localhost:8080`. Happy coding!
 
+## Other Features ✨
+
+### Add more python library 📚
+Add your python library to the `requirements.txt` file. Rest assured, no local installation is needed. 🐍
+
+### Setting up environment variables ⚙️
+Of course, you need environment variables. We follow the best practices. Considering the CI/CD pipeline scenario, we store the environment variables in the `fastapi/env.yaml` file. 🌐
+
+```yaml
+secrets:
+  ENVVARIABLE1: "envvalue1"
+  ENVVARIABLE2: "envvalue2"
+```
+
+Here you can add your environment variables. Later, you will find these environment variables in your FastAPI application. All variables are stored using Kubernetes secrets with the help of Helm. ⚓️
+
+In a more serious production environment, where you don't want to store environment variables in the codebase, you can set more secret environment variables on the fly from your CI/CD pipeline. 💻
+
+```bash
+helm upgrade --set-json='secret={"envkey1":"envvalue1","envkey2":"envvalue2"}' -f ./fastapi/env.yaml fastapi ./fastapi/helm-chart
+``` 
+
+### Enabling Auto Scaling in Kubernetes cluster ⚖️
+It's easy. You just have to update the `fastapi/env.yaml` file. 🚀
+
+```yaml
+resources:
+  limits:
+    cpu: 250m # 25% of 1 CPU core
+    memory: 256Mi
+  requests:
+    cpu: 250m # 25% of 1 CPU core
+    memory: 256Mi
+
+autoscaling:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 100 # Edit the max replica you want
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+```
+
+### Add custom Kubernetes YAML 📄
+
+First, create a Kubernetes YAML file in the `k8-yaml-files` directory. Then update the `skaffold.yaml` file like this. 🔧
+
+```yaml
+manifests:
+  rawYaml:
+    - ./k8-yaml-files/dockerconfigjson.yaml
+```
+
+### Add an image pull secret 🤐
+
+Update the `env.yaml` file with the following entry. 🔒
+
+```yaml
+imagePullSecrets: [{ name: dockerconfigjson-github-com }]
+```
+
+Refer to the above section to add the `dockerconfigjson` YAML. 
+
+### Change ports ⚓️
+
+The default port is `8080`. If you want to change it to `9090`, you need to perform three tasks. 🔄
+
+1. Change the `Dockerfile` to `EXPOSE 9090/tcp`.
+2. Add the following to your `env.yaml` file. 
+
+```yaml
+service:
+  type: ClusterIP
+  port: 9090
+```
+
+3. In your `skaffold.yaml` file, add the following section.
+
+```yaml
+portForward:
+  - resourceType: deployment
+    resourceName: fastapi 
+    port: 9090
+    address: 0.0.0.0
+    localPort: 9090
+``` 
+
+### Increase Replica 📦
+By default, the `replicaCount` is 1. To increase it, add the following line to your `env.yaml` file. 
+
+```yaml
+replicaCount: 3
+```
+
+### More customization ✨
+
+Go to `fastapi/helm-chart/values.yaml` and tweak it according to your needs. 🛠️
+
 ## Contributing
 
 Pull requests are welcome. For major changes, please open an issue first
@@ -85,36 +182,50 @@ Please make sure to update tests as appropriate.
 [MIT](https://choosealicense.com/licenses/mit/)
 
 
-<!-- Install helm
-Install Docker
-Install kind
-Install skaffold
+<!-- Here is the content converted to Markdown:
 
-Helm use case
-helm create api
+---
 
-# Rename
-Then rename the folder to helm-chart
+## Install helm
+Install Helm on your system. 
 
-# Manage secrets
-Create a secret yaml. Don't forget to edit the api.fullname
+## Helm use case
+Use Helm to manage your FastAPI application.
 
-Update the secret values in values.yaml
+```shell
+helm create fastapi
+```
 
-Change the deployments.yaml. Add 
-          envFrom:
-            - secretRef:
-                name: {{ include "api.fullname" . }}-secrets
+## Rename
+Rename the folder to "helm-chart".
 
+## Manage secrets
+Create a secret YAML file. Make sure to edit the `fastapi.fullname`.
 
-# Manage Ports
-Change the service.type.port to 8080 or your desiarable port
+Update the secret values in the `values.yaml` file.
 
-Change the service.yaml file as well 
+Change the `deployments.yaml` file to include the following:
+
+```yaml
+envFrom:
+  - secretRef:
+      name: {{ include "fastapi.fullname" . }}-secrets
+```
+
+## Manage Ports
+Change the `service.type.port` to `8080` or your desired port.
+
+Also, update the `service.yaml` file:
+
+```yaml
 spec.ports.targetPort: {{ .Values.service.port }}
+```
 
-Change the deployment.yaml file as well 
+Update the `deployment.yaml` file as well:
+
+```yaml
 spec.template.spec.containers.ports.containerPort: {{ .Values.service.port }}
-Change the liveness readiness port as well from the deployment as well
+```
 
+Make sure to change the liveness and readiness ports in the deployment file as well.
  -->

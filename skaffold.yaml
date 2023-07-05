@@ -1,4 +1,4 @@
-apiVersion: skaffold/v4beta6
+apiVersion: skaffold/v4beta1
 kind: Config
 metadata:
   name: skaffold-fastapi
@@ -10,22 +10,22 @@ build:
     push: false
 manifests:
   # rawYaml:
-  #   - ./raw-yaml/dockerconfigjson.yaml
+  #   - ./k8-yaml-files/dockerconfigjson.yaml
   helm:
     releases:
       - name: fastapi
-        skipTests: true	
+        skipTests: true	# Because kind clusters is not okayish with tests
         chartPath: ./fastapi/helm-chart
         valuesFiles:
-          - ./fastapi/helm-chart/values.yaml
+          - ./fastapi/env.yaml
+          # - ./fastapi/helm-chart/values.yaml
         setValueTemplates:
-          # https://skaffold.dev/docs/deployers/helm/
-          # use skaffold-generated image repo and tag for our deployment
           image.repository: "{{ .IMAGE_REPO_fastapi }}"
           image.tag: "{{ .IMAGE_TAG_fastapi }}"
+          # Used skaffold-generated image repo and tag for our deployment. For more https://skaffold.dev/docs/deployers/helm/
 portForward:
   - resourceType: deployment
-    resourceName: fastapi
+    resourceName: fastapi # Find the exact resource name using this command `kubectl get deployments`
     port: 8080
     address: 0.0.0.0
     localPort: 8080

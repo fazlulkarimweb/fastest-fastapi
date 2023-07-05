@@ -4,8 +4,7 @@
 
 # Pass all secret values here
 secrets:
-  ENV: "production"
-  ENV2: "production2"
+  ENVVARIABLE1: "value1"
 
 replicaCount: 1
 
